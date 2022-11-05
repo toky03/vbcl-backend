@@ -7,9 +7,6 @@ on:
 jobs:
   deployment:
     runs-on: 'ubuntu-latest'
-    defaults:
-      run:
-        working-directory: ./helm
     steps:
       - name: Download repository
         uses: actions/checkout@v2
@@ -26,6 +23,7 @@ jobs:
           helm version
       - name: Deploy
         run: |
+          cd helm
           helm upgrade --install --atomic --timeout 1m volley . -f ./values.yaml \
             --kube-context github-deploy-volley-kubernetes --namespace volley \
             --set image.tag=1.1.10
