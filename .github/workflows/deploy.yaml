@@ -5,23 +5,11 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    runs-on: 'ubuntu-latest'
-    steps:
-      - uses: actions/checkout@v2
-      - name: docker Login
-        run:  echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
-      - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag toky03/vbcl-backend:1.1.${{ github.run_number }}
-      - name: Push the Docker image
-        run: docker push toky03/vbcl-backend:1.1.${{ github.run_number }}
-
   deployment:
     runs-on: 'ubuntu-latest'
     defaults:
       run:
         working-directory: ./helm
-    needs: build
     steps:
       - uses: actions/checkout@v2
       - name: 'Deploy'
@@ -34,7 +22,7 @@ jobs:
           token: '${{ github.token }}'
           values: |
             image:
-              tag: 1.1.${{ github.run_number }}
+              tag: 1.1.10
           value-files: "values.yaml"
         env:
           KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
