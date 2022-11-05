@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{  print (include "bubelu-volley.fullname" .) "-backend"  }}
+  labels:
+    app: vbcl
+    tier: backend
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      app: vbcl
+      tier: backend
+      {{- include "bubelu-volley.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        app: vbcl
+        tier: backend
+        {{- include "bubelu-volley.selectorLabels" . | nindent 8 }}
+    spec:    
+      containers:
+        - name: {{ print .Chart.Name "-backend" }}
+          image: "{{ .Values.image.repository}}:{{.Values.image.tag }}"
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /api/
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 4
+          env:
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: jdbc:postgresql://database:5432/volley_app
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: vbcluser
+            - name: QUARKUS_KUBERNETES_CONFIG_SECRETS_ENABLED
+              value: "true"
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vbclsecret
+                  key: password
+                  optional: false
+            - name: QUARKUS_HTTP_CORS_ORIGINS
+              value: "https://vbclyss.ch,https://www.vbclyss.ch"
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
