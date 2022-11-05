@@ -61,6 +61,7 @@ public class TaskService {
     task.setDatum(taskDto.getDatum());
     task.setBeschreibung(taskDto.getBeschreibung());
     task.setDauer(taskDto.getDauer());
+    task.setStartTime(taskDto.getStartZeit());
   }
 
   @Transactional
