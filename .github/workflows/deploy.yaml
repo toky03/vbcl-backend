@@ -17,6 +17,7 @@ jobs:
         run: docker push toky03/vbcl-backend:1.1.${{ github.run_number }}
   deployment:
     runs-on: 'ubuntu-latest'
+    needs: build
     steps:
       - name: Download repository
         uses: actions/checkout@v2
