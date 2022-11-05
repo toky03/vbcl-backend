@@ -18,12 +18,14 @@ jobs:
 
   deployment:
     runs-on: 'ubuntu-latest'
+    defaults:
+      run:
+        working-directory: ./helm
     needs: build
     steps:
       - uses: actions/checkout@v2
       - name: 'Deploy'
         uses: 'deliverybot/helm@v1'
-        working-directory: helm
         with:
           helm: helm3
           release: 'volley'
