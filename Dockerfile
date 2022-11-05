@@ -10,10 +10,13 @@ RUN ./mvnw package -Pnative -DskipTests
 
 FROM quay.io/quarkus/quarkus-micro-image:1.0
 WORKDIR /work/
-RUN chown 1001 /work \
-    && chmod "g+rwX" /work \
-    && chown 1001:root /work
-COPY --chown=1001:root target/*-runner /work/application
+COPY --from=build /code/target/*-runner /work/application
+
+# set up permissions for user `1001`
+RUN chmod 775 /work /work/application \
+  && chown -R 1001 /work \
+  && chmod -R "g+rwX" /work \
+  && chown -R 1001:root /work
 
 EXPOSE 8080
 USER 1001
