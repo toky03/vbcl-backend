@@ -3,6 +3,7 @@ package ch.toky.dto;
 import ch.toky.entity.TaskEntity;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import javax.json.bind.annotation.JsonbDateFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,8 @@ public class Task {
 
   @JsonbDateFormat(value = "yyyy-MM-dd")
   LocalDate datum;
+  @JsonbDateFormat(value = "HH:mm")
+  LocalTime startZeit;
 
   String beschreibung;
   String dauer;
@@ -37,6 +40,7 @@ public class Task {
                 .name(taskEntity.getNameReservation())
                 .build())
         .bestaetigt(taskEntity.getBestaetigt())
+        .startZeit(taskEntity.getStartTime())
         .build();
   }
 
@@ -46,6 +50,7 @@ public class Task {
         .beschreibung(beschreibung)
         .dauer(dauer)
         .bestaetigt(Boolean.FALSE)
+        .startTime(startZeit)
         .build();
   }
 }

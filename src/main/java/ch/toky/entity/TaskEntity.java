@@ -3,6 +3,7 @@ package ch.toky.entity;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.panache.common.Sort;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -37,5 +38,8 @@ public class TaskEntity extends PanacheEntity {
 
   @Column(name = "BESTAETIGT")
   Boolean bestaetigt;
+
+  @Column(name="START_TIME")
+  LocalTime startTime;
 
 }

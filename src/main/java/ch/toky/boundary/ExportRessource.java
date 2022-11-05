@@ -14,8 +14,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("/api/export")
+@Tag(name = "File Export", description = "Datei export resource")
 public class ExportRessource {
 
   private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("YYYYMMdd_HHmmss");

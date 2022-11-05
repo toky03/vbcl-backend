@@ -6,9 +6,11 @@ import javax.ws.rs.HEAD;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 @Path("/api")
 @PermitAll
+@Tag(name = "Preflight", description = "Ressource fuer Preflight und readiness check")
 public class PreflightResource {
 
   @OPTIONS
