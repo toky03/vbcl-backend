@@ -32,9 +32,6 @@ jobs:
           values: |
             image:
               tag: 1.1.${{ github.run_number }}
-          value-files: >-
-          [
-            "values.yaml"
-          ]
+          value-files: ["values.yaml"]
         env:
           KUBECONFIG_FILE: '${{ secrets.KUBECONFIG }}'
