@@ -26,10 +26,8 @@ jobs:
           tar -zxvf helm-v3.8.0-linux-amd64.tar.gz
           mv linux-amd64/helm /usr/local/bin/helm
           helm version
-      - name: Lint helm charts
-        run: helm lint .
       - name: Deploy
         run: |
           helm upgrade --install --atomic --timeout 1m volley . -f ./values.yaml \
-            --kube-context volley --namespace volley \
+            --kube-context github-deploy-volley-kubernetes --namespace volley \
             --set image.tag=1.1.10
