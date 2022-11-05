@@ -8,16 +8,17 @@ jobs:
   build:
     runs-on: 'ubuntu-latest'
     steps:
-    - uses: actions/checkout@v2
-    - name: docker Login
-      run:  echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag toky03/vbcl-backend:1.1..${{ github.run_number }}
-    - name: Push the Docker image
-      run: docker push toky03/vbcl-backend:1.1..${{ github.run_number }}
+      - uses: actions/checkout@v2
+      - name: docker Login
+        run:  echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag toky03/vbcl-backend:1.1..${{ github.run_number }}
+      - name: Push the Docker image
+        run: docker push toky03/vbcl-backend:1.1..${{ github.run_number }}
 
   deployment:
     runs-on: 'ubuntu-latest'
+    needs: build
     steps:
       - uses: actions/checkout@v2
       - working-directory: helm
