@@ -2,7 +2,7 @@ name: vbcl_backend_deploy
 
 on:
   push:
-    branches: [master]
+    branches: [main]
 
 jobs:
   build:
