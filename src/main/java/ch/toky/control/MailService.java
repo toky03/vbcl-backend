@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
@@ -122,8 +123,8 @@ public class MailService {
       e.printStackTrace();
     }
 
-    net.fortuna.ical4j.model.Calendar icsCalendar =
-        new net.fortuna.ical4j.model.Calendar()
+    Calendar icsCalendar =
+        new Calendar()
             .withProdId("-//Helfereinsatz VBCLyss")
             .withProperty(method)
             .withDefaults()
