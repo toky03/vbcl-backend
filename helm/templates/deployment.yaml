@@ -24,7 +24,7 @@ spec:
         app: vbcl
         tier: backend
         {{- include "bubelu-volley.selectorLabels" . | nindent 8 }}
-    spec:    
+    spec:
       containers:
         - name: {{ print .Chart.Name "-backend" }}
           image: "{{ .Values.image.repository}}:{{.Values.image.tag }}"
@@ -50,6 +50,42 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: vbclsecret
+                  key: password
+                  optional: false
+            - name: QUARKUS_MAILER_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: vbcmail
+                  key: password
+                  optional: false
+            - name: QUARKUS_MAILER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: vbcmail
+                  key: password
+                  optional: false
+            - name: QUARKUS_MAILER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: vbcmail
+                  key: password
+                  optional: false
+            - name: QUARKUS_MAILER_FROM
+              valueFrom:
+                secretKeyRef:
+                  name: vbcmail
+                  key: password
+                  optional: false
+            - name: QUARKUS_MAILER_SSL
+              valueFrom:
+                secretKeyRef:
+                  name: vbcmail
+                  key: password
+                  optional: false
+            - name: QUARKUS_MAILER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vbcmail
                   key: password
                   optional: false
             - name: QUARKUS_HTTP_CORS_ORIGINS

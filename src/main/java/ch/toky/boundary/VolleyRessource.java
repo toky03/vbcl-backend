@@ -67,7 +67,7 @@ public class VolleyRessource {
   @RolesAllowed("tkAdmin")
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public void update(@PathParam("taskId") Long id) {
+  public void delete(@PathParam("taskId") Long id) {
     this.taskService.delete(id);
   }
 

@@ -41,8 +41,8 @@ public class CsvExportService {
         List<String> data =
             Arrays.asList(
                 String.valueOf(task.id),
-                task.getDatum().format(FORMATTER),
-                task.getDauer(),
+                task.getStartDatum().format(FORMATTER),
+                task.getDauer().toString(),
                 task.getBeschreibung(),
                 task.getNameReservation());
         csvPrinter.printRecord(data);
