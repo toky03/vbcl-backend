@@ -56,32 +56,28 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: vbcmail
-                  key: password
+                  key: host
                   optional: false
             - name: QUARKUS_MAILER_PORT
               valueFrom:
                 secretKeyRef:
                   name: vbcmail
-                  key: password
+                  key: port
                   optional: false
             - name: QUARKUS_MAILER_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: vbcmail
-                  key: password
+                  key: user
                   optional: false
             - name: QUARKUS_MAILER_FROM
               valueFrom:
                 secretKeyRef:
                   name: vbcmail
-                  key: password
+                  key: user
                   optional: false
             - name: QUARKUS_MAILER_SSL
-              valueFrom:
-                secretKeyRef:
-                  name: vbcmail
-                  key: password
-                  optional: false
+              value: "true"
             - name: QUARKUS_MAILER_PASSWORD
               valueFrom:
                 secretKeyRef:

@@ -13,6 +13,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.inject.Inject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -24,6 +25,11 @@ class MailServiceTest {
   @Inject MailService mailService;
 
   @Inject MockMailbox mockMailbox;
+
+  @BeforeEach
+  void setup() {
+    mockMailbox.clear();
+  }
 
   @Test
   void sendMail() {
