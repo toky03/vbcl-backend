@@ -6,9 +6,11 @@ import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.Property;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
@@ -106,12 +108,15 @@ public class MailService {
     TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
     TimeZone timezone = registry.getTimeZone("Europe/Zurich");
     VTimeZone tz = timezone.getVTimeZone();
-    Property timeZone = tz.getProperty(TZID).orElse(null);
+    Property timeZone = tz.getProperty(TZID);
+    DateTime start =
+        new DateTime(from.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli());
+    DateTime end = new DateTime(to.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli());
 
     VEvent meeting = null;
     try {
       meeting =
-          new VEvent(from, to, description)
+          new VEvent(start, end, description)
               .withProperty(timeZone)
               .withProperty(id)
               .withProperty(sequence)
