@@ -1,30 +1,12 @@
 package ch.toky.control;
 
-import static net.fortuna.ical4j.model.Property.TZID;
-
+import ch.toky.control.IcalCreator.IcalEntry;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
-import java.net.URISyntaxException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.DateTime;
-import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.TimeZone;
-import net.fortuna.ical4j.model.TimeZoneRegistry;
-import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
-import net.fortuna.ical4j.model.component.VEvent;
-import net.fortuna.ical4j.model.component.VTimeZone;
-import net.fortuna.ical4j.model.property.Description;
-import net.fortuna.ical4j.model.property.Method;
-import net.fortuna.ical4j.model.property.Organizer;
-import net.fortuna.ical4j.model.property.Sequence;
-import net.fortuna.ical4j.model.property.Status;
-import net.fortuna.ical4j.model.property.Uid;
-import net.fortuna.ical4j.util.RandomUidGenerator;
-import net.fortuna.ical4j.util.UidGenerator;
 
 @ApplicationScoped
 public class MailService {
@@ -39,19 +21,25 @@ public class MailService {
       LocalDateTime to) {
     String body = String.format("<strong>Hallo %s</strong>" + "\r\n" + "<p>%s</p>", name, message);
 
-    UidGenerator ug = new RandomUidGenerator();
-    Property calendarId = ug.generateUid();
-    Property method = new Method(Method.VALUE_REQUEST);
-    Property status = new Status(Status.VALUE_CONFIRMED);
-    Property sequence = new Sequence(0);
+    UUID uuid = UUID.randomUUID();
 
     mailer.send(
         Mail.withHtml(receiver, "VBC Helfereinsatz", body)
             .addAttachment(
                 "einsatz.ics",
-                createEntry(calendarId, from, to, description, method, sequence, status),
+                IcalCreator.createIcalEntry(
+                    IcalEntry.builder()
+                        .start(from)
+                        .end(to)
+                        .description(description)
+                        .method("REQUEST")
+                        .status("CONFIRMED")
+                        .summary(description)
+                        .sequence(0)
+                        .uuid(uuid)
+                        .build()),
                 "text/calendar"));
-    return calendarId.getValue();
+    return uuid.toString();
   }
 
   public void cancelCalendarEntry(
@@ -61,10 +49,6 @@ public class MailService {
       LocalDateTime from,
       LocalDateTime to,
       Integer currentSequence) {
-    Property calendarId = new Uid(id);
-    Property method = new Method(Method.VALUE_CANCEL);
-    Property status = new Status(Status.VALUE_CANCELLED);
-    Property sequence = new Sequence(currentSequence);
 
     String body = String.format("<p>%s</p>", "Helfereinsatz abgesagt");
 
@@ -72,7 +56,17 @@ public class MailService {
         Mail.withHtml(receiver, "VBC Helfereinsatz", body)
             .addAttachment(
                 "einsatz.ics",
-                createEntry(calendarId, from, to, description, method, sequence, status),
+                IcalCreator.createIcalEntry(
+                    IcalEntry.builder()
+                        .start(from)
+                        .end(to)
+                        .description(description)
+                        .method("CANCEL")
+                        .status("CANCELLED")
+                        .summary(description)
+                        .sequence(currentSequence)
+                        .uuid(UUID.fromString(id))
+                        .build()),
                 "text/calendar"));
   }
 
@@ -83,58 +77,23 @@ public class MailService {
       LocalDateTime from,
       LocalDateTime to,
       Integer currentSequence) {
-    Property calendarId = new Uid(id);
-    Property method = new Method(Method.VALUE_REFRESH);
-    Property sequence = new Sequence(currentSequence);
-    Property status = new Status(Status.VALUE_CONFIRMED);
     String body = String.format("<p>%s</p>", message);
 
     mailer.send(
         Mail.withHtml(receiver, "VBC Helfereinsatz", body)
             .addAttachment(
                 "einsatz.ics",
-                createEntry(calendarId, from, to, message, method, sequence, status),
+                IcalCreator.createIcalEntry(
+                    IcalEntry.builder()
+                        .start(from)
+                        .end(to)
+                        .description(message)
+                        .method("REFRESH")
+                        .status("CONFIRMED")
+                        .summary(message)
+                        .sequence(currentSequence)
+                        .uuid(UUID.fromString(id))
+                        .build()),
                 "text/calendar"));
-  }
-
-  private byte[] createEntry(
-      Property id,
-      LocalDateTime from,
-      LocalDateTime to,
-      String description,
-      Property method,
-      Property sequence,
-      Property status) {
-    TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
-    TimeZone timezone = registry.getTimeZone("Europe/Zurich");
-    VTimeZone tz = timezone.getVTimeZone();
-    Property timeZone = tz.getProperty(TZID);
-    DateTime start =
-        new DateTime(from.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli());
-    DateTime end = new DateTime(to.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli());
-
-    VEvent meeting = null;
-    try {
-      meeting =
-          new VEvent(start, end, description)
-              .withProperty(timeZone)
-              .withProperty(id)
-              .withProperty(sequence)
-              .withProperty(status)
-              .withProperty(new Description(description))
-              .withProperty(new Organizer("info@vbclyss.ch"))
-              .getFluentTarget();
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-    }
-
-    Calendar icsCalendar =
-        new Calendar()
-            .withProdId("-//Helfereinsatz VBCLyss")
-            .withProperty(method)
-            .withDefaults()
-            .withComponent(meeting)
-            .getFluentTarget();
-    return icsCalendar.toString().getBytes();
   }
 }
