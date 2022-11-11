@@ -76,8 +76,6 @@ spec:
                   name: vbcmail
                   key: user
                   optional: false
-            - name: QUARKUS_MAILER_SSL
-              value: "true"
             - name: QUARKUS_MAILER_PASSWORD
               valueFrom:
                 secretKeyRef:
