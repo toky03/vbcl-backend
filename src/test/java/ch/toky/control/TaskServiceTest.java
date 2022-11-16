@@ -2,29 +2,19 @@ package ch.toky.control;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import ch.toky.dto.Ordering;
 import ch.toky.dto.Task;
 import ch.toky.entity.TaskEntity;
 import ch.toky.integration.TaskRepository;
-import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
-import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.jwt.Claim;
-import io.quarkus.test.security.jwt.JwtSecurity;
-import java.security.Principal;
 import java.util.List;
 import javax.inject.Inject;
-import javax.ws.rs.core.SecurityContext;
-import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 @QuarkusTest
@@ -36,55 +26,62 @@ class TaskServiceTest {
 
   @InjectMock TaskRepository taskRepository;
 
-  @Inject JsonWebToken jsonWebToken;
-
-  @BeforeEach
-  void setup() {
-    JsonWebToken mock = Mockito.mock(JsonWebToken.class);
-    Mockito.when(mock.getName()).thenReturn("mocked User");
-    QuarkusMock.installMockForType(mock, JsonWebToken.class);
-  }
-
   @Test
-  @TestSecurity(user = "tester", roles = "standart")
-  @JwtSecurity(claims = {@Claim(key = "email", value = "username")})
   void filterBestaetigtForNonAdmin() {
     // setup
-
+    String userName = "user";
+    String orderColumn = "datum";
     Mockito.when(taskRepository.findFilteredWithSorting(anyString(), anyString(), eq(Boolean.TRUE)))
-        .thenReturn(List.of(TaskEntity.builder().build()));
-
-    MockSecurityContext context = mock(MockSecurityContext.class);
-    when(context.isUserInRole("vorstand")).thenReturn(Boolean.FALSE);
+        .thenReturn(List.of());
 
     // execute
-    List<Task> tasks = taskService.readTasks(context, "datum", Ordering.ASC);
+    List<Task> tasks = taskService.readTasks(userName, Boolean.FALSE, orderColumn, Ordering.ASC);
 
     // assert
     assertThat(tasks, hasSize(0));
-    Mockito.verify(taskRepository).findFilteredWithSorting(eq(null), anyString(), eq(Boolean.TRUE));
+    Mockito.verify(taskRepository)
+        .findFilteredWithSorting(eq(userName), eq(orderColumn), eq(Boolean.TRUE));
   }
 
-  class MockSecurityContext implements SecurityContext {
+  @Test
+  void shouldNotSendConfidentialInformationIfUserIsUnknown() {
+    // setup
+    String userName = "";
+    String orderColumn = "datum";
+    Mockito.when(taskRepository.findFilteredWithSorting(anyString(), anyString(), eq(Boolean.TRUE)))
+        .thenReturn(
+            List.of(
+                TaskEntity.builder()
+                    .bestaetigt(Boolean.TRUE)
+                    .idReservation("confidentialId")
+                    .nameReservation("confidential name")
+                    .build()));
 
-    @Override
-    public Principal getUserPrincipal() {
-      return null;
-    }
+    // execute
+    List<Task> tasks = taskService.readTasks(userName, Boolean.FALSE, orderColumn, Ordering.ASC);
 
-    @Override
-    public boolean isUserInRole(String role) {
-      return true;
-    }
+    // assert
+    assertThat(tasks, hasSize(1));
+    Task task = tasks.get(0);
+    assertThat(task.getReservation(), nullValue());
+    assertThat(task.getBestaetigt(), nullValue());
+    Mockito.verify(taskRepository)
+        .findFilteredWithSorting(eq(""), eq(orderColumn), eq(Boolean.TRUE));
+  }
 
-    @Override
-    public boolean isSecure() {
-      return false;
-    }
+  @Test
+  void shouldNotFilterForAdmin() {
+    // setup
+    String userName = "user";
+    String orderColumn = "datum";
+    Mockito.when(taskRepository.findWithSorting(anyString(), eq(Boolean.TRUE)))
+        .thenReturn(List.of());
 
-    @Override
-    public String getAuthenticationScheme() {
-      return null;
-    }
+    // execute
+    List<Task> tasks = taskService.readTasks(userName, Boolean.TRUE, orderColumn, Ordering.ASC);
+
+    // assert
+    assertThat(tasks, hasSize(0));
+    Mockito.verify(taskRepository).findWithSorting(eq(orderColumn), eq(Boolean.TRUE));
   }
 }

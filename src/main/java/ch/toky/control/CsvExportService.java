@@ -8,7 +8,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import javax.enterprise.context.RequestScoped;
@@ -19,14 +18,15 @@ import org.apache.commons.csv.CSVPrinter;
 @RequestScoped
 public class CsvExportService {
 
-  private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.YYYY");
   @Inject TaskRepository taskRepository;
+
+  @Inject TimeProvider timeProvider;
 
   public ByteArrayInputStream createCsvFile(String sortColumn, Ordering ordering) {
     return tasksToCsv(taskRepository.findWithSorting(sortColumn, Ordering.ASC.equals(ordering)));
   }
 
-  private static ByteArrayInputStream tasksToCsv(List<TaskEntity> tasks) {
+  private ByteArrayInputStream tasksToCsv(List<TaskEntity> tasks) {
     final CSVFormat format =
         CSVFormat.EXCEL
             .builder()
@@ -41,7 +41,7 @@ public class CsvExportService {
         List<String> data =
             Arrays.asList(
                 String.valueOf(task.id),
-                task.getStartDatum().format(FORMATTER),
+                timeProvider.formatToPretty(task.getStartDatum()),
                 task.getDauer().toString(),
                 task.getBeschreibung(),
                 task.getNameReservation());

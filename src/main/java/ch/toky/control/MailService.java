@@ -1,9 +1,11 @@
 package ch.toky.control;
 
 import ch.toky.control.IcalCreator.IcalEntry;
+import ch.toky.dto.Task;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -95,5 +97,22 @@ public class MailService {
                         .uuid(UUID.fromString(id))
                         .build()),
                 "text/calendar"));
+  }
+
+  public void sendReminder(String receiver, List<Task> taskList) {
+    StringBuilder bodyBuilder = new StringBuilder();
+    bodyBuilder.append("<h1>Deine Anstehende Helfereinsätze</h1>");
+    bodyBuilder.append("<ul>");
+    taskList.forEach(
+        task -> {
+          String item =
+              String.format(
+                  "<li>%02d:%02d %s</li>",
+                  task.getStartDatum().getHour(),
+                  task.getStartDatum().getMinute(),
+                  task.getBeschreibung());
+          bodyBuilder.append(item);
+        });
+    mailer.send(Mail.withHtml(receiver, "Helfereinsatz Erinnerung", bodyBuilder.toString()));
   }
 }

@@ -25,7 +25,7 @@ public class Task {
   User reservation;
   Boolean bestaetigt;
 
-  public static Task from(TaskEntity taskEntity) {
+  public static Task.TaskBuilder from(TaskEntity taskEntity) {
     return Task.builder()
         .id(String.valueOf(taskEntity.id))
         .startDatum(taskEntity.getStartDatum())
@@ -36,8 +36,7 @@ public class Task {
                 .id(taskEntity.getIdReservation())
                 .name(taskEntity.getNameReservation())
                 .build())
-        .bestaetigt(taskEntity.getBestaetigt())
-        .build();
+        .bestaetigt(taskEntity.getBestaetigt());
   }
 
   public TaskEntity create() {

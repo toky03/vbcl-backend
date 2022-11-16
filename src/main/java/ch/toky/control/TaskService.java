@@ -2,55 +2,47 @@ package ch.toky.control;
 
 import ch.toky.dto.Ordering;
 import ch.toky.dto.Task;
+import ch.toky.dto.Task.TaskBuilder;
 import ch.toky.entity.TaskEntity;
 import ch.toky.integration.TaskRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import org.eclipse.microprofile.jwt.Claim;
-import org.eclipse.microprofile.jwt.Claims;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
-@RequestScoped
+@ApplicationScoped
 public class TaskService {
 
   @Inject TaskRepository taskRepository;
 
   @Inject MailService mailService;
 
-  @Inject JsonWebToken jsonWebToken;
-
-  @Inject
-  @Claim(standard = Claims.preferred_username)
-  String userName;
-
-  @Inject
-  @Claim(standard = Claims.given_name)
-  String givenName;
-
-  @Inject
-  @Claim(standard = Claims.family_name)
-  String familyname;
-
-  public List<Task> readTasks(SecurityContext ctx, String orderColumn, Ordering ordering) {
+  public List<Task> readTasks(
+      String userName, Boolean userHasVorstandRole, String orderColumn, Ordering ordering) {
     String column = orderColumn == null ? "startDatum" : orderColumn;
+    String user = userName == null ? "" : userName;
     boolean orderAscending = Ordering.ASC.equals(ordering);
-    return createQuery(userName, ctx, column, orderAscending).stream()
-        .map(Task::from)
+    return createQuery(user, userHasVorstandRole, column, orderAscending).stream()
+        .map(
+            taskEntity -> {
+              TaskBuilder builer = Task.from(taskEntity);
+              if (user.equals("")) {
+                builer.bestaetigt(null).reservation(null);
+              }
+              return builer.build();
+            })
         .collect(Collectors.toUnmodifiableList());
   }
 
   private List<TaskEntity> createQuery(
-      String userName, SecurityContext ctx, String column, boolean orderAscending) {
-    return !ctx.isUserInRole("vorstand")
-        ? taskRepository.findFilteredWithSorting(userName, column, orderAscending)
-        : taskRepository.findWithSorting(column, orderAscending);
+      String userName, Boolean userHasVorstandRolle, String column, boolean orderAscending) {
+    return userHasVorstandRolle
+        ? taskRepository.findWithSorting(column, orderAscending)
+        : taskRepository.findFilteredWithSorting(userName, column, orderAscending);
   }
 
   @Transactional
@@ -66,7 +58,7 @@ public class TaskService {
     task.setDauer(taskDto.getDauer());
 
     if (task.getIdReservation() != null && task.getCalendarId() != null) {
-      Integer increasedCalendarSequence = task.getCalendarSequence() +1;
+      Integer increasedCalendarSequence = task.getCalendarSequence() + 1;
       mailService.updateCalendarEntry(
           task.getCalendarId(),
           task.getIdReservation(),
@@ -82,7 +74,7 @@ public class TaskService {
   public void delete(Long id) {
     TaskEntity task = taskRepository.findById(id);
     if (task.getIdReservation() != null && task.getCalendarId() != null) {
-      Integer increasedCalendarSequence = task.getCalendarSequence() +1;
+      Integer increasedCalendarSequence = task.getCalendarSequence() + 1;
       mailService.cancelCalendarEntry(
           task.getCalendarId(),
           task.getIdReservation(),
@@ -97,7 +89,7 @@ public class TaskService {
   }
 
   @Transactional
-  public void reservateTask(Long id, SecurityContext ctx) {
+  public void reservateTask(Long id, String userName, String givenName, String familyname) {
     TaskEntity task = taskRepository.findById(id);
     task.setIdReservation(userName);
     task.setNameReservation(String.format("%s %s", givenName, familyname));
@@ -130,7 +122,7 @@ public class TaskService {
   }
 
   @Transactional
-  public void revokeReservation(Long id) {
+  public void revokeReservation(Long id, String userName) {
     TaskEntity task = taskRepository.findById(id);
     if (task.getIdReservation() == null) {
       throw new WebApplicationException(
@@ -153,7 +145,7 @@ public class TaskService {
     TaskEntity task = taskRepository.findById(id);
 
     if (task.getIdReservation() != null && task.getCalendarId() != null) {
-      Integer increasedSequence = task.getCalendarSequence() +1 ;
+      Integer increasedSequence = task.getCalendarSequence() + 1;
       mailService.cancelCalendarEntry(
           task.getCalendarId(),
           task.getIdReservation(),
