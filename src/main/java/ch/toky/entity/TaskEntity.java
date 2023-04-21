@@ -41,4 +41,7 @@ public class TaskEntity extends PanacheEntity {
 
   @Column(name = "BESTAETIGT")
   Boolean bestaetigt;
+
+  @Column(name = "EVENT_NAME")
+  String eventName;
 }

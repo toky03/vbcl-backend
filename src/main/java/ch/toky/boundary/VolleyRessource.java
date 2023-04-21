@@ -30,7 +30,8 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @RequestScoped
 public class VolleyRessource {
 
-  @Inject TaskService taskService;
+  @Inject
+  TaskService taskService;
 
   @Inject
   @Claim(standard = Claims.preferred_username)
