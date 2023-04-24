@@ -17,9 +17,11 @@ import javax.ws.rs.core.Response.Status;
 @ApplicationScoped
 public class TaskService {
 
-  @Inject TaskRepository taskRepository;
+  @Inject
+  TaskRepository taskRepository;
 
-  @Inject MailService mailService;
+  @Inject
+  MailService mailService;
 
   public List<Task> readTasks(
       String userName, Boolean userHasVorstandRole, String orderColumn, Ordering ordering) {

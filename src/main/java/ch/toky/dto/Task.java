@@ -15,12 +15,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @RegisterForReflection
 public class Task {
+
   String id;
 
   @JsonbDateFormat(value = "yyyy-MM-dd HH:mm")
   LocalDateTime startDatum;
 
   String beschreibung;
+  String eventName;
   Integer dauer;
   User reservation;
   Boolean bestaetigt;
@@ -31,6 +33,8 @@ public class Task {
         .startDatum(taskEntity.getStartDatum())
         .beschreibung(taskEntity.getBeschreibung())
         .dauer(taskEntity.getDauer())
+        .eventName(taskEntity.getEventName() != null && !taskEntity.getEventName().equals("")
+            ? taskEntity.getEventName() : "Nicht zugeordnet")
         .reservation(
             User.builder()
                 .id(taskEntity.getIdReservation())
@@ -45,6 +49,7 @@ public class Task {
         .beschreibung(beschreibung)
         .dauer(dauer)
         .bestaetigt(Boolean.FALSE)
+        .eventName(eventName)
         .build();
   }
 }

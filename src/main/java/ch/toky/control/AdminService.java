@@ -13,7 +13,8 @@ import javax.transaction.Transactional;
 @ApplicationScoped
 public class AdminService {
 
-  @Inject TaskRepository taskRepository;
+  @Inject
+  TaskRepository taskRepository;
 
   @Transactional
   public void insertTasks(List<BatchTask> taskList) {
@@ -27,6 +28,7 @@ public class AdminService {
                         .nameReservation(task.getName())
                         .idReservation(task.getName())
                         .startDatum(task.getDatum())
+                        .eventName(task.getEventName())
                         .bestaetigt(task.getName() != null && !task.getName().equals(""))
                         .build())
             .collect(Collectors.toUnmodifiableList());
