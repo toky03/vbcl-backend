@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @RegisterForReflection
 public class BatchTask {
 
-  @JsonbDateFormat(value = "yyyy-MM-dd HH.mm")
+  @JsonbDateFormat(value = "yyyy-MM-dd HH:mm")
   LocalDateTime datum;
 
   String eventName;
