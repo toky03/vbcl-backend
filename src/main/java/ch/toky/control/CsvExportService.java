@@ -18,14 +18,13 @@ import org.apache.commons.csv.CSVPrinter;
 @RequestScoped
 public class CsvExportService {
 
-  @Inject
-  TaskRepository taskRepository;
+  @Inject TaskRepository taskRepository;
 
-  @Inject
-  TimeProvider timeProvider;
+  @Inject TimeProvider timeProvider;
 
   public ByteArrayInputStream createCsvFile(String sortColumn, Ordering ordering) {
-    return tasksToCsv(taskRepository.findWithSorting(sortColumn, Ordering.ASC.equals(ordering)));
+    return tasksToCsv(
+        taskRepository.findWithSorting(null, sortColumn, Ordering.ASC.equals(ordering)));
   }
 
   private ByteArrayInputStream tasksToCsv(List<TaskEntity> tasks) {
@@ -38,7 +37,7 @@ public class CsvExportService {
 
     try (ByteArrayOutputStream out = new ByteArrayOutputStream();
         CSVPrinter csvPrinter =
-            new CSVPrinter(new PrintWriter(out, false, StandardCharsets.ISO_8859_1), format);) {
+            new CSVPrinter(new PrintWriter(out, false, StandardCharsets.ISO_8859_1), format); ) {
       for (TaskEntity task : tasks) {
         List<String> data =
             Arrays.asList(

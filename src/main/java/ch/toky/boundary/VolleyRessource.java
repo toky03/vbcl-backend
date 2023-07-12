@@ -30,8 +30,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 @RequestScoped
 public class VolleyRessource {
 
-  @Inject
-  TaskService taskService;
+  @Inject TaskService taskService;
 
   @Inject
   @Claim(standard = Claims.preferred_username)
@@ -46,6 +45,27 @@ public class VolleyRessource {
   String familyname;
 
   @GET
+  @Path("events")
+  @PermitAll
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<String> readEvents(@Context SecurityContext ctx) {
+    return taskService.readEvents(userName, ctx.isUserInRole(Constants.ROLE_VORSTAND));
+  }
+
+  @GET
+  @Path("{eventName}")
+  @PermitAll
+  @Produces(MediaType.APPLICATION_JSON)
+  public List<Task> readTasksByEventName(
+      @QueryParam("sortColumn") String sortColumn,
+      @QueryParam("sorting") Ordering ordering,
+      @PathParam("eventName") String eventName,
+      @Context SecurityContext ctx) {
+    return taskService.readTasks(
+        eventName, userName, ctx.isUserInRole(Constants.ROLE_VORSTAND), sortColumn, ordering);
+  }
+
+  @GET
   @PermitAll
   @Produces(MediaType.APPLICATION_JSON)
   public List<Task> readTasks(
@@ -53,7 +73,7 @@ public class VolleyRessource {
       @QueryParam("sorting") Ordering ordering,
       @Context SecurityContext ctx) {
     return taskService.readTasks(
-        userName, ctx.isUserInRole(Constants.ROLE_VORSTAND), sortColumn, ordering);
+        null, userName, ctx.isUserInRole(Constants.ROLE_VORSTAND), sortColumn, ordering);
   }
 
   @POST

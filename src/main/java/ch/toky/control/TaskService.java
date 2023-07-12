@@ -17,18 +17,20 @@ import javax.ws.rs.core.Response.Status;
 @ApplicationScoped
 public class TaskService {
 
-  @Inject
-  TaskRepository taskRepository;
+  @Inject TaskRepository taskRepository;
 
-  @Inject
-  MailService mailService;
+  @Inject MailService mailService;
 
   public List<Task> readTasks(
-      String userName, Boolean userHasVorstandRole, String orderColumn, Ordering ordering) {
+      String eventName,
+      String userName,
+      Boolean userHasVorstandRole,
+      String orderColumn,
+      Ordering ordering) {
     String column = orderColumn == null ? "startDatum" : orderColumn;
     String user = userName == null ? "" : userName;
     boolean orderAscending = Ordering.ASC.equals(ordering);
-    return createQuery(user, userHasVorstandRole, column, orderAscending).stream()
+    return createQuery(eventName, user, userHasVorstandRole, column, orderAscending).stream()
         .map(
             taskEntity -> {
               TaskBuilder builer = Task.from(taskEntity);
@@ -40,11 +42,21 @@ public class TaskService {
         .collect(Collectors.toUnmodifiableList());
   }
 
+  public List<String> readEvents(String userName, boolean userInRole) {
+    return createQuery(null, userName, userInRole, "eventName", true).stream()
+        .map(TaskEntity::getEventName)
+        .collect(Collectors.toUnmodifiableList());
+  }
+
   private List<TaskEntity> createQuery(
-      String userName, Boolean userHasVorstandRolle, String column, boolean orderAscending) {
+      String eventName,
+      String userName,
+      Boolean userHasVorstandRolle,
+      String column,
+      boolean orderAscending) {
     return userHasVorstandRolle
-        ? taskRepository.findWithSorting(column, orderAscending)
-        : taskRepository.findFilteredWithSorting(userName, column, orderAscending);
+        ? taskRepository.findWithSorting(eventName, column, orderAscending)
+        : taskRepository.findFilteredWithSorting(eventName, userName, column, orderAscending);
   }
 
   @Transactional
@@ -58,6 +70,10 @@ public class TaskService {
     task.setStartDatum(taskDto.getStartDatum());
     task.setBeschreibung(taskDto.getBeschreibung());
     task.setDauer(taskDto.getDauer());
+    if (taskDto.getReservation() != null) {
+      task.setNameReservation(taskDto.getReservation().getName());
+      task.setIdReservation(taskDto.getReservation().getId());
+    }
 
     if (task.getIdReservation() != null && task.getCalendarId() != null) {
       Integer increasedCalendarSequence = task.getCalendarSequence() + 1;
@@ -75,7 +91,9 @@ public class TaskService {
   @Transactional
   public void delete(Long id) {
     TaskEntity task = taskRepository.findById(id);
-    if (task.getIdReservation() != null && task.getCalendarId() != null) {
+    if (task.getIdReservation() != null
+        && task.getCalendarId() != null
+        && LocalDateTime.now().isBefore(task.getStartDatum())) {
       Integer increasedCalendarSequence = task.getCalendarSequence() + 1;
       mailService.cancelCalendarEntry(
           task.getCalendarId(),

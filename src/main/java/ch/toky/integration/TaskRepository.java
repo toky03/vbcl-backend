@@ -10,15 +10,20 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class TaskRepository implements PanacheRepository<TaskEntity> {
 
-  public List<TaskEntity> findWithSorting(String column, boolean ascending) {
+  public List<TaskEntity> findWithSorting(String eventName, String column, boolean ascending) {
     Sort sorting = ascending ? Sort.ascending(column) : Sort.descending(column);
-    return listAll(sorting);
+    return list("?1 is null or eventName = cast(?1 as text)", sorting, eventName);
   }
 
   public List<TaskEntity> findFilteredWithSorting(
-      String userName, String column, boolean ascending) {
+      String eventName, String userName, String column, boolean ascending) {
     Sort sorting = ascending ? Sort.ascending(column) : Sort.descending(column);
-    return list("bestaetigt = ?1 or idReservation = ?2", sorting, Boolean.FALSE, userName);
+    return list(
+        "(?1 is null or eventName =  cast(?1 as text)) and (bestaetigt = ?2 or idReservation = ?3)",
+        sorting,
+        eventName,
+        Boolean.FALSE,
+        userName);
   }
 
   public List<TaskEntity> findByDate(LocalDateTime dateTime) {

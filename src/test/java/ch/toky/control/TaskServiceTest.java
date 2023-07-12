@@ -31,16 +31,20 @@ class TaskServiceTest {
     // setup
     String userName = "user";
     String orderColumn = "datum";
-    Mockito.when(taskRepository.findFilteredWithSorting(anyString(), anyString(), eq(Boolean.TRUE)))
+    String eventName = "A";
+    Mockito.when(
+            taskRepository.findFilteredWithSorting(
+                anyString(), anyString(), anyString(), eq(Boolean.TRUE)))
         .thenReturn(List.of());
 
     // execute
-    List<Task> tasks = taskService.readTasks(userName, Boolean.FALSE, orderColumn, Ordering.ASC);
+    List<Task> tasks =
+        taskService.readTasks(eventName, userName, Boolean.FALSE, orderColumn, Ordering.ASC);
 
     // assert
     assertThat(tasks, hasSize(0));
     Mockito.verify(taskRepository)
-        .findFilteredWithSorting(eq(userName), eq(orderColumn), eq(Boolean.TRUE));
+        .findFilteredWithSorting(eq(eventName), eq(userName), eq(orderColumn), eq(Boolean.TRUE));
   }
 
   @Test
@@ -48,7 +52,9 @@ class TaskServiceTest {
     // setup
     String userName = "";
     String orderColumn = "datum";
-    Mockito.when(taskRepository.findFilteredWithSorting(anyString(), anyString(), eq(Boolean.TRUE)))
+    Mockito.when(
+            taskRepository.findFilteredWithSorting(
+                eq(null), anyString(), anyString(), eq(Boolean.TRUE)))
         .thenReturn(
             List.of(
                 TaskEntity.builder()
@@ -58,7 +64,8 @@ class TaskServiceTest {
                     .build()));
 
     // execute
-    List<Task> tasks = taskService.readTasks(userName, Boolean.FALSE, orderColumn, Ordering.ASC);
+    List<Task> tasks =
+        taskService.readTasks(null, userName, Boolean.FALSE, orderColumn, Ordering.ASC);
 
     // assert
     assertThat(tasks, hasSize(1));
@@ -66,7 +73,7 @@ class TaskServiceTest {
     assertThat(task.getReservation(), nullValue());
     assertThat(task.getBestaetigt(), nullValue());
     Mockito.verify(taskRepository)
-        .findFilteredWithSorting(eq(""), eq(orderColumn), eq(Boolean.TRUE));
+        .findFilteredWithSorting(eq(null), eq(""), eq(orderColumn), eq(Boolean.TRUE));
   }
 
   @Test
@@ -74,14 +81,17 @@ class TaskServiceTest {
     // setup
     String userName = "user";
     String orderColumn = "datum";
-    Mockito.when(taskRepository.findWithSorting(anyString(), eq(Boolean.TRUE)))
+    String eventname = "eventName";
+    Mockito.when(taskRepository.findWithSorting(anyString(), anyString(), eq(Boolean.TRUE)))
         .thenReturn(List.of());
 
     // execute
-    List<Task> tasks = taskService.readTasks(userName, Boolean.TRUE, orderColumn, Ordering.ASC);
+    List<Task> tasks =
+        taskService.readTasks(eventname, userName, Boolean.TRUE, orderColumn, Ordering.ASC);
 
     // assert
     assertThat(tasks, hasSize(0));
-    Mockito.verify(taskRepository).findWithSorting(eq(orderColumn), eq(Boolean.TRUE));
+    Mockito.verify(taskRepository)
+        .findWithSorting(eq(eventname), eq(orderColumn), eq(Boolean.TRUE));
   }
 }
