@@ -45,6 +45,7 @@ public class TaskService {
   public List<String> readEvents(String userName, boolean userInRole) {
     return createQuery(null, userName, userInRole, "eventName", true).stream()
         .map(TaskEntity::getEventName)
+        .distinct()
         .collect(Collectors.toUnmodifiableList());
   }
 
