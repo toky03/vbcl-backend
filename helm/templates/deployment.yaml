@@ -36,9 +36,16 @@ spec:
             httpGet:
               path: /api/
               port: http
+            initialDelaySeconds: 3
+            periodSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/
+              port: http
             initialDelaySeconds: 5
-            periodSeconds: 5
-            failureThreshold: 4
+            periodSeconds: 3
+            failureThreshold: 2
           env:
             - name: QUARKUS_DATASOURCE_JDBC_URL
               value: jdbc:postgresql://database:5432/volley_app
