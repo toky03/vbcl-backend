@@ -26,7 +26,7 @@ public class MailService {
     UUID uuid = UUID.randomUUID();
 
     mailer.send(
-        Mail.withHtml(receiver, "VBC Helfereinsatz", body)
+        Mail.withHtml(receiver.trim(), "VBC Helfereinsatz", body)
             .addAttachment(
                 "einsatz.ics",
                 IcalCreator.createIcalEntry(
@@ -55,7 +55,7 @@ public class MailService {
     String body = String.format("<p>%s</p>", "Helfereinsatz abgesagt");
 
     mailer.send(
-        Mail.withHtml(receiver, "VBC Helfereinsatz", body)
+        Mail.withHtml(receiver.trim(), "VBC Helfereinsatz", body)
             .addAttachment(
                 "einsatz.ics",
                 IcalCreator.createIcalEntry(
@@ -82,7 +82,7 @@ public class MailService {
     String body = String.format("<p>%s</p>", message);
 
     mailer.send(
-        Mail.withHtml(receiver, "VBC Helfereinsatz", body)
+        Mail.withHtml(receiver.trim(), "VBC Helfereinsatz", body)
             .addAttachment(
                 "einsatz.ics",
                 IcalCreator.createIcalEntry(
@@ -113,6 +113,6 @@ public class MailService {
                   task.getBeschreibung());
           bodyBuilder.append(item);
         });
-    mailer.send(Mail.withHtml(receiver, "Helfereinsatz Erinnerung", bodyBuilder.toString()));
+    mailer.send(Mail.withHtml(receiver.trim(), "Helfereinsatz Erinnerung", bodyBuilder.toString()));
   }
 }
